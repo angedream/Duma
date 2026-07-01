@@ -1,11 +1,11 @@
 <template>
   <div class="container">
     <van-nav-bar
-      title="北京测试"
+      :title="dubao?.dubaoName || '嘟宝'"
       left-text="返回"
       right-text="更多"
       left-arrow
-      @click-left=""
+      @click-left="goback"
       @click-right=""
     >
       <template #right>
@@ -30,8 +30,8 @@
       </van-button>
       <van-button class="control-btn" @click="changecam">
         <span class="control-btn-content">
-          <van-icon name="replay" size="20" />
-          <span>切换</span>
+          <van-icon name="chat-o" size="20" />
+          <span>消息</span>
         </span>
       </van-button>
       <van-button class="control-btn" @click="changescreen">
@@ -46,13 +46,6 @@
           <span>再会</span>
         </span>
       </van-button>
-      <van-button class="control-btn" @click="bye">
-        <span class="control-btn-content">
-          <van-icon name="more" size="20" />
-          <span>更多</span>
-        </span>
-      </van-button>
-
     </div>
 
   </div>
@@ -61,9 +54,16 @@
 import { onMounted, onUnmounted } from 'vue'
 import { c } from '@/myconfig'
 import { useMQTTStore } from '@/store/mqtt';
-import { useRoute } from 'vue-router'
+import { useRoute,useRouter } from 'vue-router'
+import { useDubaoStore } from '@/store/dubao'
+let store = useDubaoStore()
+
+
 const route = useRoute()
+const router = useRouter()
 const { dubaoId } = route.params;
+const dubao = store.getDuBao(dubaoId as string)
+console.log(dubao)
 const mqtt = useMQTTStore()
 let isMuted = false;
 let peerConnection:any
@@ -92,6 +92,10 @@ onMounted(() => {
 onUnmounted(() => {
   bye();
 })
+function goback() {
+  // history.back();
+  router.push('/main');
+}
 async function init() {
   const configuration = {
     iceServers: [

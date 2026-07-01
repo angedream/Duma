@@ -1,22 +1,24 @@
 import { defineStore } from 'pinia'
-import { computed, ref, reactive } from 'vue';
+import {   reactive } from 'vue';
 import { getdubaoID,setdubaoID } from '@/api/storge'
+interface dubaointerface {
+  dubaoId: string;
+  dubaoName: string;
+  cover: string;
+}
 export const useDubaoStore = defineStore('dubao', () => {
 
-  let name = ref('鲫鱼');
-  let num = ref(0);
-  let dubaoId = reactive(JSON.parse(getdubaoID() as string)||[]);
-  function add(d: any) {
+  let dubaoId: dubaointerface[] = reactive(JSON.parse(getdubaoID() as string)||[]);
+  function add(d: dubaointerface) {
     dubaoId.push(d)
-    num = dubaoId.length;
     console.log(d);
     setdubaoID(JSON.stringify(dubaoId));
   }
-  let calcPrice = computed(() => {
-    return num.value * 2;
+  function getDuBao(id: string) {
+    return dubaoId.find((item) => item.dubaoId === id);
+  }
 
-  })
-  return { name, num,dubaoId,add,calcPrice };
+  return { dubaoId,add,getDuBao };
 
 })
 

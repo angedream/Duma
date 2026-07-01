@@ -1,100 +1,70 @@
 <template>
-  <div class="container">
-    <van-nav-bar
-        title="家庭"
-        left-text=""
-        right-text=""
-      >
-        <!-- 但是 Vant 的 left-arrow 默认是个返回箭头 (类似 <)，
-            所以想要头像必须用插槽，如下简写只能达到类似效果 -->
-        <template #left>
-          <van-icon  color="#000000" name="user-circle-o" size="28" />
-        </template>
-        <template #right>
-          <van-icon @click="scan" color="#000000" name="scan" size="26" />
-        </template>
-      </van-nav-bar>
-    <van-grid :border="false" :column-num="1">
-      <van-grid-item v-for="(item,index) in (dubaoId as any)" :key="item.id" @click="handleVideoClick(item)">
-        <div class="my-video-wrapper">
-          <van-image :src="dubaobg" width="100%" height="180px"  radius="6" fit="cover"/>
-          <van-icon name="play-circle-o" size="30" class="play-center" />
-           <div class="video-info">
-              <span>{{ item.dubaoName!=''?item.dubaoName:item.dubaoId }}</span>
-            </div>
-        </div>
-      </van-grid-item>
-    </van-grid>
-    <van-empty  v-if="dubaoId.length==0" image="network" description="列表为空" >
-        <van-button @click="scan" type="primary" style="width: 200px;" class="bottom-button">扫描</van-button>
-    </van-empty>
+  <div class="app">
+    <!-- 路由视图 -->
+     <div class="main">
+       <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+     </div>
+
+    <!-- 底部 Tabbar（使用 Vant 4 语法） -->
+    <van-tabbar route fixed placeholder>
+      <van-tabbar-item replace to="/main" icon="home-o">首页</van-tabbar-item>
+      <van-tabbar-item replace to="/code" icon="scan">扫一扫</van-tabbar-item>
+      <van-tabbar-item replace to="/me" icon="friends-o">我的</van-tabbar-item>
+    </van-tabbar>
   </div>
 </template>
 <script setup lang="ts">
-import dubaobg from '@/assets/dubao.png'
-import { useRouter } from 'vue-router'
-import { useDubaoStore } from '@/store/dubao'
-import { storeToRefs } from 'pinia'
-const router = useRouter()
-let store = useDubaoStore()
-let { dubaoId} = storeToRefs(store);
-function handleVideoClick(item: any) {
-  router.push({
-  name: 'Dubao',
-  params: {
-    dubaoId: item.dubaoId
+import { useMQTTStore } from '@/store/mqtt';
+const mqtt = useMQTTStore()
+mqtt.$subscribe(async (mutate:any, state) => {
+    if (typeof mutate.events.newValue === 'boolean') {
+    console.log('是布尔类型')
+    return;
   }
-})
-}
-function scan() {
-  router.push('/code')
+  let data = JSON.parse(state.datamsg);
+  let msg = JSON.parse(data.msg);
+  switch (msg.code) {
+    case 'answer':
+      break;
+    case 'ice':
+      default:
+        break;
+    }
 
-}
+});
+
 </script>
 <style scoped>
-.container{
-  padding-top: 5px;
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-.my-video-wrapper {
-  position: relative;
-  width: 90%;        /* 宽度 80% */
-  margin: 0 auto;    /* 水平居中 */
+
+/* 让 router-view 占据剩余空间，Tabbar 固定在底部 */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 0px; /* 防止内容被 Tabbar 遮挡 */
 }
-.play-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
+/* Vant Tabbar 默认固定在底部，无需额外样式 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
-.video-info {
-  position: absolute;
-  bottom: 0%;
-  right: 0%;
-  transform: translate(0%, 0%);
-  padding: 5px;
-  color: white;
-  font-size: 15px;
-  animation: colorCycle 60s infinite;
-  text-align: right;
+
+.fade-enter-from{
+  opacity: 0;
+  transform: translateY(10px);
 }
-/* 定义颜色循环动画 */
-@keyframes colorCycle {
-  0% {
-    color: #000000; /* 黑色 */
-  }
-  20% {
-    color: #ffffff; /* 白色 */
-  }
-  40%{
-    color: red;
-  }
-  80%{
-    color: blue;
-  }
-  100% {
-    color: #000000; /* 回到黑色 */
-  }
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
+
 </style>
 
