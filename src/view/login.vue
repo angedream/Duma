@@ -104,9 +104,6 @@ const onSubmit = (values: any) => {
     ...formData
   }
   mqtt.duma = { dumaId: '1212' };
-  mqtt.num = 10;
-  console.log(mqtt.duma);
-  console.log(mqtt);
   mqtt.connect();
   router.push('/home');
   // 在这里调用登录 API

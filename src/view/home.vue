@@ -17,7 +17,7 @@
     <van-grid :border="false" :column-num="1">
       <van-grid-item v-for="(item,index) in (dubaoId as any)" :key="item.id" @click="handleVideoClick(item)">
         <div class="my-video-wrapper">
-          <van-image :src="item.cover" width="100%" height="180px"  radius="6" fit="cover"/>
+          <van-image :src="dubaobg" width="100%" height="180px"  radius="6" fit="cover"/>
           <van-icon name="play-circle-o" size="30" class="play-center" />
            <div class="video-info">
               <span>{{ item.dubaoName!=''?item.dubaoName:item.dubaoId }}</span>
@@ -31,18 +31,13 @@
   </div>
 </template>
 <script setup lang="ts">
+import dubaobg from '@/assets/dubao.png'
 import { useRouter } from 'vue-router'
 import { useDubaoStore } from '@/store/dubao'
 import { storeToRefs } from 'pinia'
 const router = useRouter()
 let store = useDubaoStore()
 let { dubaoId} = storeToRefs(store);
-
-// const list = ref([
-//   { id: 1, cover: 'https://img.yzcdn.cn/vant/cat.jpeg' }, // 替换成你的第一张图链接
-//   { id: 2, cover: 'https://img.yzcdn.cn/vant/leaf.jpg' }, // 替换成你的第二张图链接
-//   { id: 3, cover: 'https://img.yzcdn.cn/vant/tree.jpg' }  // 替换成你的第三张图链接
-// ]);
 function handleVideoClick(item: any) {
   router.push({
   name: 'Dubao',

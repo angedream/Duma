@@ -18,12 +18,27 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted,onUnmounted } from 'vue'
+import { onMounted,onUnmounted, computed } from 'vue'
 import { useMQTTStore } from './store/mqtt';
 const mqtt = useMQTTStore()
-mqtt.$subscribe((mutate, state) => {
-  // console.log(state.datamsg);
+mqtt.$subscribe(async (mutate:any, state) => {
+    if (typeof mutate.events.newValue === 'boolean') {
+    console.log('是布尔类型')
+    return;
+  }
+  let data = JSON.parse(state.datamsg);
+  let msg = JSON.parse(data.msg);
+  switch (msg.code) {
+    case 'answer':
+      break;
+    case 'ice':
+      default:
+        break;
+    }
+
 });
+
+
 onMounted(() => {
   mqtt.connect();
 })

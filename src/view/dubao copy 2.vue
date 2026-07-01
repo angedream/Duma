@@ -1,60 +1,11 @@
 <template>
-  <div class="container">
-    <van-nav-bar
-      title="北京测试"
-      left-text="返回"
-      right-text="更多"
-      left-arrow
-      @click-left=""
-      @click-right=""
-    >
-      <template #right>
-        <van-icon name="ellipsis" size="18" />
-      </template>
-    </van-nav-bar>
-    <div class="video-container">
-      <video id="remoteVideo"  controls controlslist="noremoteplayback fullscreen" ></video>
-    </div>
-    <div class="video-controls">
-      <van-button class="control-btn" @click="call">
-        <span class="control-btn-content">
-          <van-icon name="phone-o" size="20" />
-          <span>呼叫</span>
-        </span>
-      </van-button>
-       <van-button class="control-btn" @click="changecam">
-        <span class="control-btn-content">
-          <van-icon name="audio" size="20" />
-          <span>对讲</span>
-        </span>
-      </van-button>
-      <van-button class="control-btn" @click="changecam">
-        <span class="control-btn-content">
-          <van-icon name="replay" size="20" />
-          <span>切换</span>
-        </span>
-      </van-button>
-      <van-button class="control-btn" @click="changescreen">
-        <span class="control-btn-content">
-          <van-icon name="desktop-o" size="20" />
-          <span>桌面</span>
-        </span>
-      </van-button>
-      <van-button class="control-btn" @click="bye">
-        <span class="control-btn-content">
-          <van-icon name="cross" size="20" />
-          <span>再会</span>
-        </span>
-      </van-button>
-      <van-button class="control-btn" @click="bye">
-        <span class="control-btn-content">
-          <van-icon name="more" size="20" />
-          <span>更多</span>
-        </span>
-      </van-button>
-
-    </div>
-
+  <div class="home">
+    <video id="remoteVideo"  controls controlslist="noremoteplayback fullscreen" ></video>
+    <van-button @click="call">呼叫嘟宝</van-button>
+    <van-button @click="changecam">切换相机</van-button>
+    <van-button @click="changescreen">查看桌面</van-button>
+    <van-button @click="sendchat" v-show="false">聊天</van-button>
+    <van-button @click="bye">下次再会</van-button>
   </div>
 </template>
 <script setup lang="ts">
@@ -65,7 +16,6 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const { dubaoId } = route.params;
 const mqtt = useMQTTStore()
-let isMuted = false;
 let peerConnection:any
 let dataChannel: any = null
 mqtt.$subscribe(async (mutate:any, state) => {
@@ -257,57 +207,12 @@ function bye() {
 }
 </script>
 <style scoped>
-.container{
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.video-container{
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #000; /* 设置背景颜色为黑色 */
-}
 video{
   width: 100%;
   min-height: 300px;
 }
-
-.video-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 8px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  background-color: black;
-}
-
-.control-btn {
-  flex: 1;
-  min-width: 22px;
-  height: 40px;
-  border-radius: 10px;
-  background: #f7f8fa;
-  color: #333;
-  border: 1px solid #e5e7eb;
-  white-space: nowrap;
-}
-
-.control-btn-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.2;
-  font-size: 12px;
-}
-
-.control-btn :deep(.van-button__content) {
-  width: 100%;
+.home{
   height: 100%;
+  background-color:skyblue;
 }
-
 </style>

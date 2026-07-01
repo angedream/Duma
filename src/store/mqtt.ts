@@ -6,16 +6,16 @@ import { c } from '@/myconfig'
 
 export const useMQTTStore = defineStore('mqtt', () => {
   let client: any = null;
-  let num = ref(0);
   let duma:any = null;
   let datamsg = ref('');
+  let online = ref(false);
   async function connect() {
     duma = JSON.parse(getUserData() as string);
     if (client != null||duma==null) {
       return;
     }
     let options = {
-      keepalive: 60,
+      keepalive: 30,
       clean: true, // true: 清除会话, false: 保留会话
       connectTimeout: 4000, // 超时时间
       // 认证信息
@@ -32,13 +32,16 @@ export const useMQTTStore = defineStore('mqtt', () => {
 
   client.on('connect', () => {
     console.log('MQTT 已连接')
+    online.value = true;
     client.subscribe('/duma/'+duma.dumaId);
   })
     client.on('reconnect', () => {
       console.log('MQTT 正在重连...');
+      online.value = false;
     });
     client.on('error', (error:any) => {
       console.error('MQTT 连接错误:', error);
+      online.value = false;
     });;
 
   client.on('message', async (t:any, msg:any) => {
@@ -68,6 +71,6 @@ export const useMQTTStore = defineStore('mqtt', () => {
     await client.publish('/dubao/'+dubaoId, s)
 
   };
-  return { num, datamsg, duma, connect, disconnect, pushmsg }
+  return { online, datamsg, duma, connect, disconnect, pushmsg }
 
 })
