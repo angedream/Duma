@@ -1,0 +1,93 @@
+{
+  "id": "5203834",
+  "name": "嘟妈",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "9559063",
+      "name": "麦克风",
+      "font_class": "ziyuan",
+      "unicode": "e61b",
+      "unicode_decimal": 58907
+    },
+    {
+      "icon_id": "44851775",
+      "name": "关闭麦克风",
+      "font_class": "microphone-off",
+      "unicode": "e618",
+      "unicode_decimal": 58904
+    },
+    {
+      "icon_id": "1727440",
+      "name": "213麦克风-线性",
+      "font_class": "maikefeng-xianxing",
+      "unicode": "e8c2",
+      "unicode_decimal": 59586
+    },
+    {
+      "icon_id": "5882682",
+      "name": "消息",
+      "font_class": "xiaoxi",
+      "unicode": "ec3b",
+      "unicode_decimal": 60475
+    },
+    {
+      "icon_id": "6582343",
+      "name": "定位",
+      "font_class": "dingwei",
+      "unicode": "e636",
+      "unicode_decimal": 58934
+    },
+    {
+      "icon_id": "629337",
+      "name": "声音",
+      "font_class": "shengyin",
+      "unicode": "e64c",
+      "unicode_decimal": 58956
+    },
+    {
+      "icon_id": "2417644",
+      "name": "关闭声音",
+      "font_class": "guanbishengyin",
+      "unicode": "e613",
+      "unicode_decimal": 58899
+    },
+    {
+      "icon_id": "5961314",
+      "name": "摄像机",
+      "font_class": "shexiangji",
+      "unicode": "ec59",
+      "unicode_decimal": 60505
+    },
+    {
+      "icon_id": "6539424",
+      "name": "麦克风",
+      "font_class": "maikefeng",
+      "unicode": "e683",
+      "unicode_decimal": 59011
+    },
+    {
+      "icon_id": "10749552",
+      "name": "关闭摄像头",
+      "font_class": "guanbishexiangtou",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    },
+    {
+      "icon_id": "39525873",
+      "name": "关闭麦克风-copy",
+      "font_class": "disableMic",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "22177386",
+      "name": "对讲",
+      "font_class": "tubiao-14",
+      "unicode": "e61d",
+      "unicode_decimal": 58909
+    }
+  ]
+}

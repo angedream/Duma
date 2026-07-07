@@ -8,6 +8,9 @@
   </div>
 </template>
 <script setup lang="ts">
+import '@/assets/font/iconfont.js' // 引入本地CSS文件
+// import '//at.alicdn.com/t/c/font_5203834_y4bp340sjrr.js' // 引入本地CSS文件
+
 import { onMounted,onUnmounted } from 'vue'
 import { useMQTTStore } from './store/mqtt';
 const mqtt = useMQTTStore()

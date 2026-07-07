@@ -6,13 +6,12 @@ const routes = [
   {
     path: '/home', name: 'Home', component: () => import('@/view/home.vue'),
     children: [
-  { path: '/dubao/:dubaoId', name: 'Dubao', component: () => import('@/view/dubao.vue') },
-
       { path: '/main', name: 'Main', component: () => import('@/view/main.vue') },
       { path: '/code', name: 'Code', component: () => import('@/view/qrcode.vue') },
       { path: '/me', name: 'me', component: () => import('@/view/me.vue') },
         ]
   },
+  { path: '/dubao/:dubaoId', name: 'Dubao', component: () => import('@/view/dubao.vue') },
   { path: '/login', name: 'login', component: () => import('@/view/login.vue') },
 ]
 const router = createRouter(

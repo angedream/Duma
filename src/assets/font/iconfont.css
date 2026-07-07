@@ -1,0 +1,63 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 5203834 */
+  src: url('iconfont.woff2?t=1783398253362') format('woff2'),
+       url('iconfont.woff?t=1783398253362') format('woff'),
+       url('iconfont.ttf?t=1783398253362') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-ziyuan:before {
+  content: "\e61b";
+}
+
+.icon-microphone-off:before {
+  content: "\e618";
+}
+
+.icon-maikefeng-xianxing:before {
+  content: "\e8c2";
+}
+
+.icon-xiaoxi:before {
+  content: "\ec3b";
+}
+
+.icon-dingwei:before {
+  content: "\e636";
+}
+
+.icon-shengyin:before {
+  content: "\e64c";
+}
+
+.icon-guanbishengyin:before {
+  content: "\e613";
+}
+
+.icon-shexiangji:before {
+  content: "\ec59";
+}
+
+.icon-maikefeng:before {
+  content: "\e683";
+}
+
+.icon-guanbishexiangtou:before {
+  content: "\e620";
+}
+
+.icon-disableMic:before {
+  content: "\e600";
+}
+
+.icon-tubiao-14:before {
+  content: "\e61d";
+}
+
