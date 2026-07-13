@@ -25,7 +25,9 @@ export default defineConfig({
     vueJsx(),
     // vueDevTools(),
     Components({
-      resolvers: [VantResolver()]
+      resolvers: [VantResolver()],
+      dts: true,  // 生成类型声明文件，方便 TS 识别
+  dirs: ['src/components'],  // 自动导入你自定义的组件
     })
   ],
   base:'./',

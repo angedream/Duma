@@ -20,6 +20,8 @@ declare module 'vue' {
     VanCell: typeof import('vant/es')['Cell']
     VanCellGroup: typeof import('vant/es')['CellGroup']
     VanCheckbox: typeof import('vant/es')['Checkbox']
+    VanDatePicker: typeof import('vant/es')['DatePicker']
+    VanDatetimePicker: typeof import('vant/es')['DatetimePicker']
     VanEmpty: typeof import('vant/es')['Empty']
     VanField: typeof import('vant/es')['Field']
     VanForm: typeof import('vant/es')['Form']
@@ -28,6 +30,7 @@ declare module 'vue' {
     VanIcon: typeof import('vant/es')['Icon']
     VanImage: typeof import('vant/es')['Image']
     VanNavBar: typeof import('vant/es')['NavBar']
+    VanPopup: typeof import('vant/es')['Popup']
     VanTabbar: typeof import('vant/es')['Tabbar']
     VanTabbarItem: typeof import('vant/es')['TabbarItem']
   }
@@ -43,6 +46,8 @@ declare global {
   const VanCell: typeof import('vant/es')['Cell']
   const VanCellGroup: typeof import('vant/es')['CellGroup']
   const VanCheckbox: typeof import('vant/es')['Checkbox']
+  const VanDatePicker: typeof import('vant/es')['DatePicker']
+  const VanDatetimePicker: typeof import('vant/es')['DatetimePicker']
   const VanEmpty: typeof import('vant/es')['Empty']
   const VanField: typeof import('vant/es')['Field']
   const VanForm: typeof import('vant/es')['Form']
@@ -51,6 +56,7 @@ declare global {
   const VanIcon: typeof import('vant/es')['Icon']
   const VanImage: typeof import('vant/es')['Image']
   const VanNavBar: typeof import('vant/es')['NavBar']
+  const VanPopup: typeof import('vant/es')['Popup']
   const VanTabbar: typeof import('vant/es')['Tabbar']
   const VanTabbarItem: typeof import('vant/es')['TabbarItem']
 }

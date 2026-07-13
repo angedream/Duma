@@ -1,49 +1,38 @@
 <template>
   <div class="container">
-    <van-nav-bar
-      :title="dubao?.dubaoName || '嘟宝'"
-      left-text="返回"
-      left-arrow
-      @click-left="goback"
-    >
+    <van-nav-bar :title="dubao?.dubaoName || '嘟宝'" left-text="返回" left-arrow @click-left="goback">
       <template #right>
         <div class="nav-right" @click="showMenu = true">
           <van-icon name="ellipsis" size="18" />
         </div>
       </template>
     </van-nav-bar>
-    <van-action-sheet
-      v-model:show="showMenu"
-      :actions="menuActions"
-      cancel-text="取消"
-      @select="onMenuSelect"
-    />
+    <van-action-sheet v-model:show="showMenu" :actions="menuActions" cancel-text="取消" @select="onMenuSelect" />
     <div class="video-container">
-      <video id="remoteVideo" controls controlslist="noremoteplayback fullscreen"></video>
+      <video id="remoteVideo" controls muted controlslist="noremoteplayback fullscreen"></video>
     </div>
     <div class="video-controls">
-       <span class="control-btn"  >
-             <svg class="icon" aria-hidden="true">
-              <use xlink:href="#icon-ziyuan" ></use>
-            </svg>
-          </span>
-        <span class="control-btn">
-             <svg class="icon" aria-hidden="true">
-              <use xlink:href="#icon-guanbishengyin"></use>
-            </svg>
-          </span>
+      <span @click="domic" class="control-btn">
+        <svg class="icon" aria-hidden="true">
+          <use :xlink:href="ismic ? '#icon-ziyuan' : '#icon-microphone-off'"></use>
+        </svg>
+      </span>
+      <span @click="domute" class="control-btn">
+        <svg class="icon" aria-hidden="true">
+          <use :xlink:href="isMuted ? '#icon-shengyin' : '#icon-guanbishengyin'"></use>
+        </svg>
+      </span>
 
-          <span class="control-btn">
-            <svg class="icon" aria-hidden="true" >
-              <use xlink:href="#icon-xiaoxi" ></use>
-            </svg>
-        </span>
-        <span class="control-btn">
-           <svg class="icon" aria-hidden="true" >
-              <use xlink:href="#icon-dingwei" ></use>
-            </svg>
-        </span>
-
+      <span @click="gochat" class="control-btn">
+        <svg class="icon" aria-hidden="true">
+          <use xlink:href="#icon-xiaoxi"></use>
+        </svg>
+      </span>
+      <span @click="gogaode" class="control-btn">
+        <svg class="icon" aria-hidden="true">
+          <use xlink:href="#icon-dingwei"></use>
+        </svg>
+      </span>
     </div>
   </div>
 </template>
@@ -53,8 +42,8 @@ import { c } from '@/myconfig'
 import { useMQTTStore } from '@/store/mqtt'
 import { useRoute, useRouter } from 'vue-router'
 import { useDubaoStore } from '@/store/dubao'
-import { dubaoclient } from '@/utils/dubao'
-const client = new dubaoclient({coturnurl: c.coturnurl},pushmsg)
+import { dubaoclient } from '@/utils/dubaoclient'
+const client = new dubaoclient({ coturnurl: c.coturnurl }, pushmsg)
 let store = useDubaoStore()
 const route = useRoute()
 const router = useRouter()
@@ -68,6 +57,8 @@ const menuActions = [
   { name: '远程桌面', icon: 'desktop-o', action: 'changescreen' },
   { name: '挂断', icon: 'cross', action: 'bye', color: '#ee0a24' },
 ]
+let isMuted = ref(false)
+let ismic = ref(false)
 mqtt.$subscribe(async (mutate: any, state) => {
   if (typeof mutate.events.newValue === 'boolean') {
     console.log('是布尔类型')
@@ -77,12 +68,10 @@ mqtt.$subscribe(async (mutate: any, state) => {
   let msg = JSON.parse(data.msg)
   switch (msg.code) {
     case 'answer':
-      // await peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(msg.data)))
-      client.setRemoteDescription(msg.data);
+      client.setRemoteDescription(msg.data)
       break
     case 'ice':
-      // await peerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(msg.data)))
-      client.addIceCandidate(msg.data);
+      client.addIceCandidate(msg.data)
     default:
       break
   }
@@ -102,13 +91,13 @@ function onMenuSelect(action: any) {
   showMenu.value = false
   switch (action.action) {
     case 'call':
-      call()
+      client.start()
       break
     case 'changecam':
-      changecam()
+      client.changecam()
       break
     case 'changescreen':
-      changescreen()
+      client.changescreen()
       break
     case 'bye':
       bye()
@@ -118,19 +107,10 @@ function onMenuSelect(action: any) {
   }
 }
 
-
 async function pushmsg(code: any, d: any) {
   await mqtt.pushmsg(dubaoId as string, code, d)
 }
-function call() {
-  client.start();
-}
-function changecam() {
-  client.changecam();
-}
-function changescreen() {
-  client.changescreen();
-}
+
 function sendchat() {
   client.sendchat('Hello from offerer!')
 }
@@ -140,6 +120,27 @@ function bye() {
     client.bye()
   }
 }
+function domute() {
+  const videoElement = document.getElementById('remoteVideo') as HTMLVideoElement
+  if (videoElement) {
+    videoElement.muted = !videoElement.muted
+    isMuted.value = !isMuted.value // 更新 isMuted 的值
+  }
+}
+function domic() {
+  ismic.value = !ismic.value // 更新 ismic 的值
+  if (ismic.value) {
+    client.enbleMic()
+  } else {
+    client.disableMic()
+  }
+}
+function gochat() {
+  router.push({ name: 'chat', params: { dubaoId: dubaoId } })
+}
+function gogaode() {
+  router.push({ name: 'gaode', params: { dubaoId: dubaoId } })
+}
 </script>
 <style scoped>
 .container {
@@ -147,13 +148,16 @@ function bye() {
   display: flex;
   flex-direction: column;
 }
+
 .video-container {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #000; /* 设置背景颜色为黑色 */
+  background-color: #000;
+  /* 设置背景颜色为黑色 */
 }
+
 video {
   width: 100%;
   min-height: 300px;
@@ -203,6 +207,7 @@ video {
   width: 100%;
   height: 100%;
 }
+
 .icon {
   width: 1em;
   height: 1em;
