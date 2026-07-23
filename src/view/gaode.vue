@@ -18,27 +18,50 @@
         <div class="history-picker-title">选择历史时间</div>
         <div class="history-picker-row">
           <label class="history-picker-label">开始时间</label>
-          <input
-            class="history-picker-input"
-            type="datetime-local"
-            v-model="historyStart"
-          />
+          <input class="history-picker-input" type="datetime-local" v-model="historyStart" />
         </div>
         <div class="history-picker-row">
           <label class="history-picker-label">结束时间</label>
-          <input
-            class="history-picker-input"
-            type="datetime-local"
-            v-model="historyEnd"
-          />
+          <input class="history-picker-input" type="datetime-local" v-model="historyEnd" />
         </div>
         <div class="history-picker-actions">
           <van-button size="small" plain type="default" @click="showHistoryPicker = false">
             取消
           </van-button>
-          <van-button size="small" type="primary" @click="onHistoryQuery">
-            查询
+          <van-button size="small" type="primary" @click="onHistoryQuery"> 查询 </van-button>
+        </div>
+      </div>
+    </van-popup>
+    <van-popup v-model:show="showFencePicker" round position="bottom">
+      <div class="history-picker">
+        <div class="history-picker-title">设置电子围栏</div>
+        <div class="history-picker-row">
+          <label class="history-picker-label">半径（米）</label>
+          <input
+            class="history-picker-input"
+            type="range"
+            min="50"
+            max="2000"
+            step="10"
+            v-model.number="fenceRadius"
+          />
+          <div style="width: 60px; text-align: right">{{ fenceRadius }} m</div>
+        </div>
+        <div class="history-picker-row">
+          <div style="color: #666; font-size: 13px">
+            点击地图设置围栏中心，或再次点击地图移动中心。
+          </div>
+        </div>
+        <div class="history-picker-actions">
+          <van-button
+            size="small"
+            plain
+            type="default"
+            @click="((showFencePicker = false), clearFenceOverlay())"
+          >
+            取消
           </van-button>
+          <van-button size="small" type="primary" @click="saveFence"> 保存 </van-button>
         </div>
       </div>
     </van-popup>
@@ -46,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, shallowRef, ref } from 'vue'
+import { onMounted, onUnmounted, shallowRef, ref, watchEffect } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { showToast } from 'vant'
@@ -59,8 +82,15 @@ const mqtt = useMQTTStore()
 const dubao = useDubaoStore()
 const showMenu = ref(false)
 const showHistoryPicker = ref(false)
-const historyStart = ref(formatDateTimeLocal(new Date(Date.now() - 1000 * 60 * 60*24*2)))
+const historyStart = ref(formatDateTimeLocal(new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)))
 const historyEnd = ref(formatDateTimeLocal(new Date()))
+// geofence state (top-level)
+const showFencePicker = ref(false)
+const fenceCenter = ref<[number, number] | null>(null)
+const fenceRadius = ref(200) // meters
+let fenceMarker: any = null
+let fenceCircle: any = null
+let currentsite:[number, number] = [116.397428, 39.90923];
 const menuActions = [
   { name: '定位', icon: 'aim', action: 'site' },
   { name: '运动轨迹', icon: 'guide-o', action: 'sport' },
@@ -76,12 +106,23 @@ function onMenuSelect(action: any) {
     case 'sport':
       let stop = Date.now()
       let start = stop - 1000 * 60 * 60 * 24 * 1
-      mqtt.pushmsg(dubaoId as string, 'gpssport', JSON.stringify({ page: 1, rows: 100 , start: start, stop: stop }))
+      mqtt.pushmsg(
+        dubaoId as string,
+        'gpssport',
+        JSON.stringify({ page: 1, rows: 100, start: start, stop: stop }),
+      )
       break
     case 'his':
       showHistoryPicker.value = true
       break
     case 'fence':
+      showFencePicker.value = true
+      console.log(fenceMarker, fenceCircle)
+      if(!fenceMarker||!fenceCircle){
+        fenceCenter.value = [currentsite[0], currentsite[1]]
+        drawFence(fenceCenter.value as [number, number], fenceRadius.value)
+        console.log('fenceCenter set to current site:', fenceCenter.value)
+      }
       break
     default:
       break
@@ -114,8 +155,60 @@ function onHistoryQuery() {
   }
   showHistoryPicker.value = false
   console.log('查询历史轨迹:', start, stop)
-  mqtt.pushmsg(dubaoId as string, 'gpssport', JSON.stringify({ page: 1, rows: 100000, start, stop }))
+  mqtt.pushmsg(
+    dubaoId as string,
+    'gpssport',
+    JSON.stringify({ page: 1, rows: 100000, start, stop }),
+  )
 }
+
+// --- geofence helpers ---
+function clearFenceOverlay() {
+  try {
+    if (fenceMarker) {
+      map.value.remove(fenceMarker)
+      map.value.clearMap();
+      fenceMarker = null
+    }
+    if (fenceCircle) {
+      map.value.remove(fenceCircle)
+      fenceCircle = null
+    }
+  } catch (e) {
+    console.error('clearFenceOverlay err', e)
+  }
+}
+
+function drawFence(center: [number, number], radius: number) {
+  if (!map.value || !AMap) return
+  clearFenceOverlay()
+  fenceMarker = new AMap.Marker({ position: center, title: '围栏中心' })
+  fenceCircle = new AMap.Circle({
+    center: center,
+    radius: radius,
+    strokeColor: '#FF5722',
+    strokeOpacity: 0.6,
+    strokeWeight: 2,
+    fillColor: 'rgba(255,87,34,0.15)',
+  })
+  map.value.add(fenceCircle)
+  map.value.add(fenceMarker)
+  map.value.setFitView([fenceCircle])
+}
+
+function saveFence() {
+  if (!fenceCenter.value) {
+    showToast('请先在地图上选择围栏中心点')
+    return
+  }
+  const [lng, lat] = fenceCenter.value
+  const data = { lng, lat, radius: fenceRadius.value }
+  console.log('保存围栏数据:', data)
+  mqtt.pushmsg(dubaoId as string, 'setfence', JSON.stringify(data))
+  showFencePicker.value = false
+  showToast('围栏已保存')
+}
+
 mqtt.$subscribe(async (mutate: any, state) => {
   if (typeof mutate.events.newValue === 'boolean') {
     return
@@ -158,7 +251,10 @@ const goBack = () => {
 const goMore = () => {
   showMenu.value = true
 }
-
+watchEffect(() => {
+  if (fenceCenter.value)
+    drawFence(fenceCenter.value as [number, number], fenceRadius.value)
+})
 onMounted(() => {
   AMapLoader.load({
     key: c.gaodekey,
@@ -175,6 +271,16 @@ onMounted(() => {
 
       map?.value.addControl(new AMap.ToolBar())
       map?.value.addControl(new AMap.Scale())
+      // map click: set fence center when fence picker open
+      map.value.on('click', (e: any) => {
+        console.log('Fence center set to:', e)
+        // if (!showFencePicker.value) return
+        const lnglat = e.lnglat || e.latlng
+        const center: [number, number] = [lnglat.lng, lnglat.lat]
+        fenceCenter.value = center
+        drawFence(center, fenceRadius.value)
+        console.log('Fence center set to:', center)
+      })
       let stop = Date.now()
       let start = stop - 1000 * 60 * 60 * 24 * 7
       mqtt.pushmsg(
@@ -194,7 +300,10 @@ onUnmounted(() => {
 })
 function maker(gps: any) {
   if (!map.value) return
+  map.value.clearMap();
+  currentsite = [gps.lng, gps.lat];
   let name = dubao.getDuBao(dubaoId as string)?.dubaoName || '嘟宝'
+  let datetime = new Date(parseInt(gps.dtime));
   const marker = new AMap.Marker({
     position: new AMap.LngLat(gps.lng, gps.lat),
     title: name,
@@ -202,11 +311,15 @@ function maker(gps: any) {
   })
   marker.on('click', (e: any) => {
     const infoWindow = new AMap.InfoWindow({
-      content: `<div style="padding: 5px;">${name}</div>`,
+      content: `<div style="padding: 5px;">${datetime.toLocaleString()}</div>`,
       offset: new AMap.Pixel(0, -30),
     })
     infoWindow.open(map.value, marker.getPosition())
-    console.log('Marker clicked:', name, e)
+    infoWindow.on('close', () => {
+      console.log('InfoWindow closed')
+      map.value.clearMap();
+
+    })
   })
   // 添加到地图
 
@@ -230,31 +343,35 @@ function polyline(gpsData: any) {
     strokeOpacity: 0.8,
   })
   map.value.add(polyline)
-  map.value.setFitView([polyline]);
+  map.value.setFitView([polyline])
 
-   const startMarker = new AMap.Marker({
-      position: gpsData[0],
-      title: '起点',
-      label: {
-        content: '<div style="background:#4CAF50;color:#fff;padding:2px 10px;border-radius:12px;">起点</div>',
-        direction: 'top'
-      }
-    });
-    map.value.add(startMarker);
-    const endMarker = new AMap.Marker({
-      position: gpsData[gpsData.length - 1],
-      title: '终点',
-      label: {
-        content: '<div style="background:#F44336;color:#fff;padding:2px 10px;border-radius:12px;">终点</div>',
-        direction: 'top'
-      }
-    });
-    map.value.add(endMarker);
-
+  const startMarker = new AMap.Marker({
+    position: gpsData[0],
+    title: '起点',
+    label: {
+      content:
+        '<div style="background:#4CAF50;color:#fff;padding:2px 10px;border-radius:12px;">起点</div>',
+      direction: 'top',
+    },
+  })
+  map.value.add(startMarker)
+  const endMarker = new AMap.Marker({
+    position: gpsData[gpsData.length - 1],
+    title: '终点',
+    label: {
+      content:
+        '<div style="background:#F44336;color:#fff;padding:2px 10px;border-radius:12px;">终点</div>',
+      direction: 'top',
+    },
+  })
+  map.value.add(endMarker)
 }
 function polylinesport(gpsData: any) {
   console.log('polylinesport', gpsData)
-  let gpsDataArray: any[] = [];
+  map.value.clearMap();
+  clearFenceOverlay()
+
+  let gpsDataArray: any[] = []
   for (let i = 0; i < gpsData.length; i++) {
     gpsDataArray[i] = [gpsData[i].lng, gpsData[i].lat]
   }
@@ -265,27 +382,28 @@ function polylinesport(gpsData: any) {
     strokeOpacity: 0.8,
   })
   map.value.add(polyline)
-  map.value.setFitView([polyline]);
+  map.value.setFitView([polyline])
 
-   const startMarker = new AMap.Marker({
-      position: gpsDataArray[gpsDataArray.length - 1],
-      title: '起点',
-      label: {
-        content: '<div style="background:#4CAF50;color:#fff;padding:2px 10px;border-radius:12px;">起点</div>',
-        direction: 'top'
-      }
-    });
-    map.value.add(startMarker);
-    const endMarker = new AMap.Marker({
-      position: gpsDataArray[0],
-      title: '终点',
-      label: {
-        content: '<div style="background:#F44336;color:#fff;padding:2px 10px;border-radius:12px;">终点</div>',
-        direction: 'top'
-      }
-    });
-    map.value.add(endMarker);
-
+  const startMarker = new AMap.Marker({
+    position: gpsDataArray[gpsDataArray.length - 1],
+    title: '起点',
+    label: {
+      content:
+        '<div style="background:#4CAF50;color:#fff;padding:2px 10px;border-radius:12px;">起点</div>',
+      direction: 'top',
+    },
+  })
+  map.value.add(startMarker)
+  const endMarker = new AMap.Marker({
+    position: gpsDataArray[0],
+    title: '终点',
+    label: {
+      content:
+        '<div style="background:#F44336;color:#fff;padding:2px 10px;border-radius:12px;">终点</div>',
+      direction: 'top',
+    },
+  })
+  map.value.add(endMarker)
 }
 </script>
 

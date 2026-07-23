@@ -8,7 +8,7 @@
         <!-- 但是 Vant 的 left-arrow 默认是个返回箭头 (类似 <)，
             所以想要头像必须用插槽，如下简写只能达到类似效果 -->
         <template #left>
-          <van-icon  color="#000000" name="user-circle-o" size="28" />
+          <van-icon @click="gome"  color="#000000" name="user-circle-o" size="28" />
         </template>
         <template #right>
           <van-icon @click="scan" color="#000000" name="scan" size="26" />
@@ -45,6 +45,9 @@ function handleVideoClick(item: any) {
     dubaoId: item.dubaoId
   }
 })
+}
+function gome() {
+  router.push('/me')
 }
 function scan() {
   router.push('/code')
