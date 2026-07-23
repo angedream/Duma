@@ -300,6 +300,7 @@ onUnmounted(() => {
 })
 function maker(gps: any) {
   if (!map.value) return
+  console.log('收到消息:', gps)
   map.value.clearMap();
   currentsite = [gps.lng, gps.lat];
   let name = dubao.getDuBao(dubaoId as string)?.dubaoName || '嘟宝'
